@@ -1,9 +1,9 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from functions.helper import first_task, second_task,third_task
+from functions.helper import t1, t2,t3,t4
 #importa tasks de  outro arquivo
 
-
+# a vantagem de utilizar funcoes em outro arquivo, é a facil organização, por exempolo em um dag grande, modularizar é a melhor forma de produzir organizado
 from datetime import datetime, timedelta
 
 
@@ -12,12 +12,15 @@ default_args = {
     'owner': 'matheus'
 }
 
-with DAG(dag_id='packaged_dag', schedule_interval="0 0 * * *", default_args=default_args) as dag:
+with DAG(dag_id='packaged', schedule_interval="0 * * * *", default_args=default_args) as dag:
 
-    python_task_1 = PythonOperator(task_id='python_task_1', python_callable=first_task)
+    p1 = PythonOperator(task_id='p1', python_callable=t1)
 
-    python_task_2 = PythonOperator(task_id='python_task_2', python_callable=second_task)
+    p2 = PythonOperator(task_id='p2', python_callable=t2)
 
-    python_task_3 = PythonOperator(task_id='python_task_3', python_callable=third_task)
+    p3 = PythonOperator(task_id='p3', python_callable=t3)
 
-    python_task_1 >> python_task_2 >> python_task_3
+    p4 = PythonOperator(task_id='p4', python_callable=t4)
+
+    
+    p1 >> p2 >> p3 >> p4

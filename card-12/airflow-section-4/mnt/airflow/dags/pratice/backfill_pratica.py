@@ -8,12 +8,17 @@ default_args = {
     'owner': 'matheus'
 }
 
-with DAG(dag_id='backfill', schedule_interval="0 0 * * *", default_args=default_args, catchup=True) as dag:
-    # executa toda meia noite de cada dia, recompondo as tarfeas atrasadas ou nao executadas
-    # Task 1
-    task_1 = BashOperator(task_id='task_1', bash_command="echo 'first task'")
-    
-    # Task 2
-    task_2 = BashOperator(task_id='task_2', bash_command="echo 'second task'")
+with DAG(dag_id='bf', schedule_interval="0 * * * *", default_args=default_args, catchup=True) as dag:
+    # todo minuto é executado, com catchup true as tarefas que nao foram executadas seja por pausa do dag ou atrasadas, serao acionadas automticamente
 
-    task_1 >> task_2
+    t1 = BashOperator(task_id='t1', bash_command="echo 'primeira task'")
+
+    t2 = BashOperator(task_id='t2', bash_command="echo 'segunda task'")
+
+    t3 = BashOperator(task_id='t3', bash_command="echo 'terceira task'")
+
+    t4 = BashOperator(task_id='t4', bash_command="echo 'quarta task'")
+
+    t5 = BashOperator(task_id='t5', bash_command="echo 'quinta task'")
+
+    t1 >> t2 >> t3 >> t4 >> t5

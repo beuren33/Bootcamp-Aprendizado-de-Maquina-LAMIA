@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from functions.helper import first_task, second_task,third_task
+from functions.helper import t1,t2,t3
 #importa tasks de outro aquivo
 
 

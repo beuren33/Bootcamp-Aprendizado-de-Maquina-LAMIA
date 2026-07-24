@@ -10,20 +10,24 @@ default_args = {
     'owner': 'matheus'
 }
 
-def second_task():
-    #print('Hello from second_task')
-    raise ValueError('This will turns the python task in failed state')
+def task2():
+    raise ValueError('erro segunda task')
 
-def third_task():
-    print('3 task')
+def task3():
+    raise ValueError('erro terceira')
+
+def task4():
+    raise ValueError('erro quarta')
 
 with DAG(dag_id='depends_task', schedule_interval="0 0 * * *", default_args=default_args) as dag:
     
-    task_1 = BashOperator(task_id='task_1',bash_command="echo 'first task'", wait_for_downstream = True)
+    t1 = BashOperator(task_id='t1',bash_command="echo 'first task'", wait_for_downstream = True)
     
-    task_2 = PythonOperator(task_id='task_2', python_callable=second_task)
+    t2 = PythonOperator(task_id='t2', python_callable=task2, depends_on_past=True)
 
-    task_3 =PythonOperator(task_id='task_3', python_callable=third_task)
+    t3 =PythonOperator(task_id='t3', python_callable=task3)
 
-    task_1 >> task_2 >> task_3
+    t4 =PythonOperator(task_id='t4', python_callable=task4)
+
+    t1 >> t2 >> t3 >> t4
     #define a ordem e dependencias das tasks no dag

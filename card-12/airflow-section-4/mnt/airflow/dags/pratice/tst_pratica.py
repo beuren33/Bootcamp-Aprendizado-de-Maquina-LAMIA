@@ -5,22 +5,31 @@ from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
 
 default_args = {
-    'start_date': datetime(2026,7,22)
+    'start_date': datetime(2026,7,22),
+    'owner': 'Matheus'
 }
 
-def process():
-    return 'process'
+def teste():
+    return 'test'
 
-with DAG(dag_id='tst_dag', schedule_interval='0 0 * * *', default_args=default_args, catchup=False) as dag:
+with DAG(dag_id='tst_dag', schedule_interval='0 * * * *', default_args=default_args, catchup=False) as dag:
     
-    task_1 = DummyOperator(task_id='task_1')
+    t1 = DummyOperator(task_id='t1')
 
-    task_2 = PythonOperator(task_id='task_2', python_callable=process)
+    t2 = PythonOperator(task_id='t2', python_callable=teste)
 
+    t3 = DummyOperator(task_id='t3')
 
-    tasks = [DummyOperator(task_id='task_{0}'.format(t)) for t in range(3, 6)]
+    t4 = DummyOperator(task_id='t4')
 
-    task_6 = DummyOperator(task_id='task_6')
+    t5 = DummyOperator(task_id='t5')
 
-    task_1 >> task_2 >> tasks >> task_6
+    t6 = DummyOperator(task_id='t6')
+
+    tks = [DummyOperator(task_id='f{0}'.format(f)) for f in range(7, 10)]
+    # cria as tasks 7 8 9 
+
+    t10 = DummyOperator(task_id='t10')
+
+    t1 >> t2 >> t3 >> t4 >> t5 >> t6>> tks >> t10
         

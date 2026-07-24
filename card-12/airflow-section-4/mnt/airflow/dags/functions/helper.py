@@ -1,8 +1,11 @@
-def first_task():
-    print("Hello from first task")
+def t1():
+    print("task 1")
 
-def second_task():
-    print("Hello from second task")
+def t2():
+    print("task 2")
 
-def third_task():
-    print("Hello from third task")
+def t3():
+    print("task 3")
+
+def t4():
+    print("task 4")
