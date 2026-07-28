@@ -3,3 +3,4 @@ numpy
 scikit-learn
 gym == 0.12.5
 matplotlib
+gymnasium
