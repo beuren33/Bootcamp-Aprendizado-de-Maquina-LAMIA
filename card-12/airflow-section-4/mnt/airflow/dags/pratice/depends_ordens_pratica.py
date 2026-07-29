@@ -29,5 +29,8 @@ with DAG(dag_id='depends_task', schedule_interval="0 0 * * *", default_args=defa
 
     t4 =PythonOperator(task_id='t4', python_callable=task4)
 
-    t1 >> t2 >> t3 >> t4
+    tks = [DummyOperator(task_id='f{0}'.format(f)) for f in range(5, 10)]
+    # cria as tasks 5 6 7 8 9 
+
+    t1 >> t2 >> t3 >> t4 >> tks
     #define a ordem e dependencias das tasks no dag
