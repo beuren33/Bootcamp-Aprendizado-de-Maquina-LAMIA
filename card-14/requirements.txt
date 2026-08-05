@@ -3,3 +3,4 @@ pandas
 scikeras==0.13.0 
 scikit-learn==1.5.2
 kagglehub
+ucimlrepo
