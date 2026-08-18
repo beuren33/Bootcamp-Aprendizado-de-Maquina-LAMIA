@@ -56,7 +56,7 @@ RUN set -ex \
     && pip install "pip<24.1" "setuptools<58" wheel \
     && pip install pytest \
     && pip install pytz \
-    && pip install pyOpenSSL \
+    && pip install "pyOpenSSL==19.1.0" "cryptography==3.3.2" \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install --use-deprecated=legacy-resolver apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} --constraint /requirements-python3.6.txt \
