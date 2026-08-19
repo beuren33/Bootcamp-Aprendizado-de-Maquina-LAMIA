@@ -14,9 +14,10 @@ with DAG(dag_id="sleep_dag", default_args=default_args, schedule_interval="@dail
 
     t1 = DummyOperator(task_id="t1")
 
+    # da tempo do dag do outro arquivo pegar a task ainda em execução
     t2 = BashOperator(
             task_id="t2",
             bash_command="sleep 30"
         )
-    
+
     t1 >> t2

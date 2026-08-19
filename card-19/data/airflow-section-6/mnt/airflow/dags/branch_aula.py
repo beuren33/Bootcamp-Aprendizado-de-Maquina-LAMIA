@@ -5,7 +5,7 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import BranchPythonOperator, PythonOperator
 
 default_args = {
-    'owner': 'Airflow',
+    'owner': 'matheus',
     'start_date': airflow.utils.dates.days_ago(2),
 }
 
@@ -14,10 +14,8 @@ IP_GEOLOCATION_APIS = {
     'ipstack': 'https://api.ipstack.com/',
     'ipinfo': 'https://ipinfo.io/json'
 }
+# pega apis de geollocalização para as tasks
 
-# Try to get the country_code field from each API
-# If given, the API is returned and the next task corresponding
-# to this API will be executed
 def check_api():
     for api, link in IP_GEOLOCATION_APIS.items():
         r = requests.get(link)
@@ -33,13 +31,12 @@ with DAG(dag_id='branch_dag',
     default_args=default_args, 
     schedule_interval="@once") as dag:
 
-    # BranchPythonOperator
-    # The next task depends on the return from the
-    # python function check_api
+
     check_api = BranchPythonOperator(
         task_id='check_api',
         python_callable=check_api
     )
+    # retorna lista de ids api
 
     none = DummyOperator(
         task_id='none'
@@ -49,7 +46,7 @@ with DAG(dag_id='branch_dag',
 
     check_api >> none >> save
 
-    # Dynamically create tasks according to the APIs
+    
     for api in IP_GEOLOCATION_APIS:
         process = DummyOperator(
             task_id=api

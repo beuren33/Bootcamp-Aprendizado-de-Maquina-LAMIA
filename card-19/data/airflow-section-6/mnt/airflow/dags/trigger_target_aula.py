@@ -5,18 +5,19 @@ from airflow.operators.python_operator import PythonOperator
 
 default_args = {
     "start_date": airflow.utils.dates.days_ago(1), 
-    "owner": "Airflow"
+    "owner": "matheus"
 }
 
 def remote_value(**context):
     print("Value {} for key=message received from the controller DAG".format(context["dag_run"].conf["message"]))
 
+# schedule_interval so vai rodar quando disparado externamente
 with DAG(dag_id="triggerdagop_target_dag", default_args=default_args, schedule_interval=None) as dag:
 
     t1 = PythonOperator(
             task_id="t1",
             provide_context=True,
-            python_callable=remote_value, 
+            python_callable=remote_value,
         )
 
     t2 = BashOperator(

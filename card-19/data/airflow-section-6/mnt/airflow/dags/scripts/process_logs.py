@@ -5,6 +5,8 @@ from datetime import datetime
 # It could be named kwargs as well. I named it context just
 # to show that this variable does exist since we use the parameter
 # provide_context=True from the PythonOperator
+# log_dir vem renderizado via templates_dict (o path Jinja já processado);
+# filename vem de params (passado direto, sem template)
 def process_logs_func(**context):
     log_dir = context['templates_dict']['log_dir']
     filename = context['params']['filename']
