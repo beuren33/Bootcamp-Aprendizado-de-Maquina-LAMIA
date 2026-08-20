@@ -12,7 +12,7 @@ args = {
 def push_xcom_with_return():
     return 'my_returned_xcom'
 
-# lê o XCom do t0
+# le o XCom do t0
 def get_pushed_xcom_with_return(**context):
     print(context['ti'].xcom_pull(task_ids='t0'))
 
