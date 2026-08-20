@@ -6,7 +6,7 @@ from airflow.operators.dummy_operator import DummyOperator
 from datetime import datetime, timedelta
 
 default_args = {
-        "owner": "airflow", 
+        "owner": "matheus", 
         "start_date": airflow.utils.dates.days_ago(1)
     }
 
