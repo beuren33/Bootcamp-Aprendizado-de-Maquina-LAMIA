@@ -59,7 +59,7 @@ RUN set -ex \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
     && pip install "pip<24.1" "setuptools<58" wheel \
     && pip install pytz \
-    && pip install pyOpenSSL \
+    && pip install pyOpenSSL==22.0.0 \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install --use-deprecated=legacy-resolver apache-airflow[celery,postgres,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} --constraint /requirements-python3.6.txt \
