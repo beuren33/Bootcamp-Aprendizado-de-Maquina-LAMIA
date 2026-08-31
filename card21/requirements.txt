@@ -4,3 +4,7 @@ graphviz
 numpy<2.0
 opencv-python
 torchvision
+kagglehub
+scikit-learn
+imgaug
+torch_snippets
