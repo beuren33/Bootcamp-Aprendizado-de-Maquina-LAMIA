@@ -8,3 +8,4 @@ kagglehub
 scikit-learn
 imgaug
 torch_snippets
+torch-summary
