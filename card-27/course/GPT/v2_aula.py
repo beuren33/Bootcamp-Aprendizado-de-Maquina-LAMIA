@@ -63,7 +63,6 @@ def estimate_loss():
     return out
 
 class Head(nn.Module):
-    """ uma cabeca de self-attention """
 
     def __init__(self, head_size):
         super().__init__()
@@ -84,14 +83,12 @@ class Head(nn.Module):
         wei = q @ k.transpose(-2,-1) * k.shape[-1]**-0.5 # escala por raiz de head_size
         wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf')) # mascara causal
         wei = F.softmax(wei, dim=-1) # normaliza em distribuicao de probabilidade
-        wei = self.dropout(wei) # dropout nos pesos
+        wei = self.dropout(wei) # droeval_intervalpout nos pesos
         v = self.value(x)
         out = wei @ v # media ponderada da posição dado os tokens passados
         return out
 
 class MultiHeadAttention(nn.Module):
-    """ multiplas cabecas de self-attention rodando em paralelo """
-
     def __init__(self, num_heads, head_size):
         super().__init__()
         self.heads = nn.ModuleList([Head(head_size) for _ in range(num_heads)])
