@@ -1,0 +1,6 @@
+classe_id | treino (Rice Leaf Disease Images)	| teste (A Rice Leaf Disease Image Dataset for Multi-Class)
+
+0	      | Bacterialblight	        | bacterial_leaf_blight
+1	      | Blast	                | leaf_blast
+2	      | Brownspot	            | brown_spot
+3	      | Tungro	                | tungro

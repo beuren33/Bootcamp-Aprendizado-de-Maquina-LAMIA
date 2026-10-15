@@ -1,0 +1,9 @@
+BASES:
+  - Dataset plantas doentes: https://data.mendeley.com/datasets/fwcj7stb8r/1
+  - Dataset plantas doentes masks: https://data.mendeley.com/datasets/92jc6w6mcy/1
+  - Dataset plantas saudaveis e doentes usadas para teste: https://data.mendeley.com/datasets/n8jpkpfz5p/1
+
+  - Dice Loss: https://medium.com/ai-salon/understanding-dice-loss-for-crisp-boundary-detection-bb30c2e5f62b
+  - Repo oficial do Keras: https://github.com/keras-team/keras/issues/3611
+  - 
+  
