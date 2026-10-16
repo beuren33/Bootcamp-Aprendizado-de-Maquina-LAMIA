@@ -5,5 +5,5 @@ BASES:
 
   - Dice Loss: https://medium.com/ai-salon/understanding-dice-loss-for-crisp-boundary-detection-bb30c2e5f62b
   - Repo oficial do Keras: https://github.com/keras-team/keras/issues/3611
-  - 
-  
+  - Doc do Keras: https://keras.io/api/losses/regression_losses/
+  - Doc da resnet Tensorflow: https://www.tensorflow.org/api_docs/python/tf/keras/applications/resnet50
