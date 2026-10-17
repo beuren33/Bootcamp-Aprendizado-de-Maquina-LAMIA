@@ -7,3 +7,5 @@ BASES:
   - Repo oficial do Keras: https://github.com/keras-team/keras/issues/3611
   - Doc do Keras: https://keras.io/api/losses/regression_losses/
   - Doc da resnet Tensorflow: https://www.tensorflow.org/api_docs/python/tf/keras/applications/resnet50
+
+  - Dados utilizados para o projeto: https://drive.google.com/drive/folders/1ygX12Npk6KUlE9s6wGCiMN2cDcIgj7UX?usp=sharing
