@@ -1,11 +1,29 @@
-BASES:
-  - Dataset plantas doentes: https://data.mendeley.com/datasets/fwcj7stb8r/1
-  - Dataset plantas doentes masks: https://data.mendeley.com/datasets/92jc6w6mcy/1
-  - Dataset plantas saudaveis e doentes usadas para teste: https://data.mendeley.com/datasets/n8jpkpfz5p/1
+Links:  
+  Bases oficiais:
+    - Dataset plantas doentes: https://data.mendeley.com/datasets/fwcj7stb8r/1
+    - Dataset plantas doentes masks: https://data.mendeley.com/datasets/92jc6w6mcy/1
+    - Dataset plantas saudaveis e doentes usadas para teste: https://data.mendeley.com/datasets/n8jpkpfz5p/1
 
-  - Dice Loss: https://medium.com/ai-salon/understanding-dice-loss-for-crisp-boundary-detection-bb30c2e5f62b
-  - Repo oficial do Keras: https://github.com/keras-team/keras/issues/3611
-  - Doc do Keras: https://keras.io/api/losses/regression_losses/
-  - Doc da resnet Tensorflow: https://www.tensorflow.org/api_docs/python/tf/keras/applications/resnet50
+  Documentação:
+    - Dice Loss: https://medium.com/ai-salon/understanding-dice-loss-for-crisp-boundary-detection-bb30c2e5f62b
+    - Repo oficial do Keras: https://github.com/keras-team/keras/issues/3611
+    - Keras IoU e MeanIoU: https://keras.io/api/metrics/segmentation_metrics/
+    - Keras Dice: https://keras.io/api/losses/regression_losses/#dice-class
+    - Scikit-learn confusion_matrix: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
+    - Scikit-learn ConfusionMatrixDisplay: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.ConfusionMatrixDisplay.html
+    - Scikit-learn accuracy_score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html
+    - Scikit-learn f1_score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
 
-  - Dados utilizados para o projeto: https://drive.google.com/drive/folders/1ygX12Npk6KUlE9s6wGCiMN2cDcIgj7UX?usp=sharing
+  Referencias da proposta:
+    - Curso da Udemy sobre segmentação semântica: https://www.udemy.com/course/segmentacao-imagens-python-a-z/?couponCode=KEEPLEARNING
+    - Códigos feitos no curso: https://github.com/beuren33/segmentacao-deep-learning
+    - Vídeo sobre a arquitetura U-Net com ResNet50: https://www.youtube.com/watch?v=wYiJHFQ6f0Q
+    - Ronneberger, Fischer, Brox (2015), U-Net: Convolutional Networks for Biomedical Image Segmentation, MICCAI 2015: https://doi.org/10.1007/978-3-319-24574-4_28
+    - Dinesh e Lakshmanan (2025), Multiclass semantic segmentation for prime disease detection with severity level identification in Citrus plant leaves, Sci Rep 15, 21208: https://doi.org/10.1038/s41598-025-04758-y
+
+  Artigos:
+    - Ma et al. 2021, Loss Odyssey in Medical Image Segmentation (Medical Image Analysis 71:102035), referencia para CE + Dice: https://arxiv.org/abs/2005.13449
+
+  Base no drive:
+    - Dados utilizados para o projeto: https://drive.google.com/drive/folders/1ygX12Npk6KUlE9s6wGCiMN2cDcIgj7UX?usp=sharing
+  
