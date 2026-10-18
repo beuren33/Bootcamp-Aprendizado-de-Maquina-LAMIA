@@ -9,13 +9,13 @@ A junção das imagens de folhas de arroz a suas respectivas mascaras, foi reali
 ## 3. Classes e mapeamento de ID
 Os arquivos de fotos e mascaras, estvam separados por pastas nomeadas com a respectiva doença, com isso uma enumeração foi possivel saber quais imagens pertencem a qual classe. Gerando a seguinte tabela de rotulação:
 
-classe_id | treino (Rice Leaf Disease Images)	| teste (A Rice Leaf Disease Image Dataset for Multi-Class)
-          |                                     |
-0	      | Bacterialblight	                    | bacterial_leaf_blight
-1	      | Blast	                            | leaf_blast
-2	      | Brownspot	                        | brown_spot
-3	      | Tungro	                            | tungro
-4         | fundo/não lesão                     | fundo/não doença
+| classe_id | treino (Rice Leaf Disease Images) | teste (A Rice Leaf Disease Image Dataset for Multi-Class) |
+|---|---|---|
+| 0 | Bacterialblight | bacterial_leaf_blight |
+| 1 | Blast | leaf_blast |
+| 2 | Brownspot | brown_spot |
+| 3 | Tungro | tungro |
+| 4 | fundo/não lesão | fundo/não doença |
 
 De zero até três, são os tipos de lesões presentes no dataset, e o id quatro se refere a quando o pixxel é um fundo ou não tem lesão. O motivo de fazer essa separação de lesão e fundo, se define por conta do modelo aprender a identificar os pixels que possuem lesão, nisso para classificar o fundo ou a folha sem lesão foi criado esta classe quatro.
 
