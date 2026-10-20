@@ -22,6 +22,7 @@ Links:
     - Dinesh e Lakshmanan (2025), Multiclass semantic segmentation for prime disease detection with severity level identification in Citrus plant leaves, Sci Rep 15, 21208: https://doi.org/10.1038/s41598-025-04758-y
 
   Artigos:
+    - Sethy, Barpanda, Rath, Behera (2020), Deep feature based rice leaf disease identification using support vector machine, Computers and Electronics in Agriculture 175:105527, artigo original da base de treino (5932 imagens de campo, 300x300, aumento por rotacao/flip, split 80:20): https://doi.org/10.1016/j.compag.2020.105527
     - Ma et al. 2021, Loss Odyssey in Medical Image Segmentation (Medical Image Analysis 71:102035), referencia para CE + Dice: https://arxiv.org/abs/2005.13449
 
   Base no drive:

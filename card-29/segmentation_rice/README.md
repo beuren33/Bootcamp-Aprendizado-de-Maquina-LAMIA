@@ -1,35 +1,40 @@
-# Processamento dos dados
+# 1. Introdução
+- O arroz é cultivado e consumido em todos os continentes e é um alimento básico da dieta de cerca de 4,0 bilhões de pessoas, o que corresponde a metade da população mundial (SILVA; WANDER, 2026). No Brasil, que é o nono maior produtor mundial e o maior fora da Ásia, a produção do ano agrícola de 2024 foi de 10,6 milhões de toneladas, e o arroz é um dos principais componentes da dieta da população (SILVA; WANDER, 2026). Nesse contexto, qualquer perda na lavoura afeta tanto a renda de quem produz quanto a oferta de alimento.
+- Entre os fatores que ameaçam essa produção estão as doenças foliares, e quatro delas se destacam no oeste de Odisha, na Índia, de onde vem a base de imagens usada neste trabalho: a queima bacteriana (bacterial blight), a brusone (blast), a mancha parda (brown spot) e o tungro (SETHY et al., 2020). A identificação dessas doenças costuma ser feita por inspeção visual, que só pode ser realizada por especialistas e consome muito tempo, ou por experimentos de laboratório, que exigem reagentes químicos e um processo complexo. Além disso, as confusões entre brown spot, bacterial blight e blast acontecem pela proximidade das cores das lesões (SETHY et al., 2020).
+- Com o avanço da visão computacional, o diagnóstico passou a ser tratado como um problema de classificação de imagens, e Sethy et al. (2020) obtiveram uma pontuação F1 de 0,9838, com a ResNet50 e uma SVM, ao atribuir uma doença a cada imagem. Porém, classificar a folha inteira diz qual é a doença, mas não onde ela está nem quanto da folha foi atingida. A segmentação semântica resolve isso ao atribuir uma classe a cada pixel, e a base RiceSeg-5932 disponibilizou máscaras manuais para as 5.932 imagens de Sethy et al. (2020), o que permite treinar modelos de segmentação para as quatro doenças. Nisso, este trabalho treina e compara modelos U-Net, com e sem encoders pré-treinados (ResNet50, ResNet101 e EfficientNetB0), e mede a generalização dos modelos em uma base externa.
 
-## 1. Fontes dos dados
-Foram selecionados tres datasets para a composição deste projeto final. A principal base de dados que será usada é a junção dp Rice Leaf Disease Images com as suas respectivas mascaras da base Rice_Leaf_Disease_Segmentation_Masks. Uma terceira base de dados será utilizada para a validação do modelo, ou seja, usar essa base como teste para ver o desempenho do modelo ao encarar dados nunca vistos antes.
+# 2. Objetivos
+- Geral: treinar um modelo de segmentação semântica para a identificação de lesões em folhas de arroz
+- Específicos:
+  - Comparar a arquitetura U-Net e outros modelos pré-treinados aplicados a esta arquitetura para encontrar o melhor resultado
+  - Fazer a comparação entre duas funções de perda, a SparseCategoricalCrossEntropy e Dice + SparseCategoricalCrossEntropy
+  - Testar a generalização dos modelos para uma base de dados externa
 
-## 2. Pareamento imagem e máscara
-A junção das imagens de folhas de arroz a suas respectivas mascaras, foi realizada através da nomeclatura de cada arquivo, onde cada arquivo é numerado respectivamente com sua mascara. Assim, foi adicionado a uma lista as tuplas que possuem o caminho da imagem original, o caminho para o arquivo da mascara, e sua classe.
+- Metas da proposta: Dice/IoU médio ≥ 0,70 e acurácia ≥ 0,75 no teste externo.
 
-## 3. Classes e mapeamento de ID
-Os arquivos de fotos e mascaras, estvam separados por pastas nomeadas com a respectiva doença, com isso uma enumeração foi possivel saber quais imagens pertencem a qual classe. Gerando a seguinte tabela de rotulação:
+# 3. Metodologia
+## 3.1 Segmentação semântica
+- A segmentação semântica atribui uma classe a cada pixel da imagem, diferente da segmentação de instância, que trata cada objeto da mesma classe como um objeto separado, na semântica todos os pixels de uma classe recebem o mesmo rótulo. A escolha da segmentação semântica se baseia no objetivo do trabalho, que é identificar o tipo de lesão e calcular a área afetada na folha. Em alguns casos a folha tem lesões em partes diferentes, sendo assim a segmentação semântica marca todas elas com a mesma classe, enquanto a de instância as trataria como lesões diferentes.
 
-| classe_id | treino (Rice Leaf Disease Images) | teste (A Rice Leaf Disease Image Dataset for Multi-Class) |
-|---|---|---|
-| 0 | Bacterialblight | bacterial_leaf_blight |
-| 1 | Blast | leaf_blast |
-| 2 | Brownspot | brown_spot |
-| 3 | Tungro | tungro |
-| 4 | fundo/não lesão | fundo/não doença |
 
-De zero até três, são os tipos de lesões presentes no dataset, e o id quatro se refere a quando o pixxel é um fundo ou não tem lesão. O motivo de fazer essa separação de lesão e fundo, se define por conta do modelo aprender a identificar os pixels que possuem lesão, nisso para classificar o fundo ou a folha sem lesão foi criado esta classe quatro.
+## 3.2 Arquitetura U-Net
+- O encoder é a peça que extrai as caracteristicas. Significa que dado uma imagem da base, ele vai fazer convoluçãoes assim diminuido a imagem e aumentando o numero de filtros(feature maps) que são extraidos da imagem, ou seja, as caracteristicas da imagem. Ao fazer essas convoluçãoes a imagem é diminuida pela metade(MaxPooling) levando para a proxima convolução apenas as caracteristicas mais relevantes na imagem.
+- O decoder pega as características extraídas pelo encoder e gera a máscara de segmentação. Em cada bloco, o Conv2DTranspose aumenta a resolução na mesma escala em que o encoder diminuiu até voltar ao tamanho original da imagem
+- As skip connections ligam os mapas de características do encoder aos do decoder de mesma resolução. O MaxPooling pode perder alguns detalhes, e as skips atribuem esse detalhe ao decoder, o que deixa as bordas da lesão mais precisas, ou seja, as skips usam os features maps como referencia para o decoder recriar a mascara
+- A saída da U-Net é um softmax por pixel, neste trabalho ela tem 5 canais (4 doenças e o fundo), onde cada pixel recebe uma probabilidade por classe, e a classe escolhida é a de maior probabilidade
 
-## 4. Resize das imagens e máscaras
-Para todas as imagens foram realizados um redimensionamento, pelo desbalnceamneto entre o dataset de treino e o de teste. A escolha inicial foi 300x300, pois a maioria das imagens ja estao neste tamanho, porém esse valor foi trocado para 288x288, já que a arquitetura com encoder RESNET50 reduz a imagem por fatores de 2 em cada bloco do encoder, e 300 não é divisível de forma limpa por essas reduções, gerando incompatibilidade de tamanho entre o encoder e o decoder na hora do Concatenate. 288 é múltiplo de 32, evitando esse problema. As imagens de folha são RGBs enquanto as mascaras apnas possuem a segmentação da lesão na imagem com o fundo preto, nisso temos as imagens com três canais e um unico canal que é o caso das mascaras.
+## 3.3 Encoders pré-treinados
+- O transfer learning é o reaproveitamento de uma já rede treinada para ser usada em outra base, e o fine-tuning continua treinando esses pesos na nova base, sem congelá-los. Foi utilizado o fine-tuning para usar encoders pré-treinados como ResNet e EfficientNet, modelos que foram treinados na base de dados ImageNet uma das maiores bases, com cerca de 1,28 milhões de imagens em 1.000 classes. A vantagem de utilizar esses modelos é a identificação de bordas, texturas e cores que ja vem de uma base diversificada.
+- A escolha do ResNet50 e do ResNet101 se define por serem modelos amplamente usados em pesquisas na area de visão computacinal. O número no nome indica a profundidade da rede, ou seja, a quantidade de camadas com pesos da rede neural. A característica da ResNet são as conexões residuais, em que cada bloco soma a sua entrada a sua saída facilitando o treino de redes profundas. A EfficientNetB0 é uma rede mais leve que as ResNets, pois escala profundidade, largura e resolução em conjunto, assim sendo possível comparar duas redes da mesma família e uma rede de outra família.
 
-## 5. Binarização da máscara
-Ao realizar uma amostragem das imagens e suas mascaras após o processamento, pela mascara ser .jpg ela nao possuia o pixel 0 ou 255, tendo pontos fracos ao redor da segmentação. Isso foi causado pelo tipo definido na matriz de zeros, nesse caso o booleano. Para resolver, foi alterado o tipo para inteiro e tambem criado uma mascara binária, garantindo que os pixels sejam parte do fundo ou da segmentação.
+## 3.4 Funções de perda
+- A Sparse Categorical Crossentropy é uma função de perda que penaliza a baixa probabilidade que o modelo dá para a classe correta de cada pixel, e o valor final é a média sobre os pixels. Diferente da CategoricalCrossentropy tradicional que exige os rótulos em one-hot, a sparse aceita números inteiros para representar cada classe.
 
-## 6. Remapeamento pixel para classe
-O mapeamento das lesões foi feita com a mascara binária e um condição que, onde possuia uma lesão era associado o rótulo da classe que foi extraída como dito anteriormente pela pasta de onde esta presente a imagem.
+- O Dice loss utilizado nos notebooks de treino é uma função de perda baseada na métrica Dice, que mede a sobreposição entre a máscara prevista e a real. Com o seguinte cálculo: 2 * interseção dividido pela soma da área da máscara prevista com a área da máscara real. A loss é 1 − Dice, como ela compara só a região de cada classe, o fundo, que ocupa a maior parte da imagem, não domina o valor, assim não desbalanceando a métrica.
 
-## 7. Split treino/validação
-A separação dos dados de treino e validação seguiu a porcentagem de 90% para o treino e 10% validação que será feita durante o treino. O motivo para escolher essa validação e não definir como dados de teste, se define tanto por boa prática mas tambem para testar o modelo em uma base diferente da de treino.
+- A CE+Dice (Ma et al. 2021) é a soma das duas funções. A crossentropy fornece um gradiente estável pixel a pixel e o Dice foca na sobreposição da região. No estudo de Ma et al. (2021), as perdas compostas desse tipo foram as mais robustas entre as comparadas. Também, após fazer um levantamento de como eram avaliados os modelos de segmentação semântica em competições do Kaggle, foi visto que o Dice e o IoU são as métricas mais usadas nessas competições.
 
-## 8. Dados de teste externo
-O processamento dos dados de teste, se define pela escolha das classes que estavam no treino, pois o dataset de teste possuia classes que não estavam no treino, por isso foi necessário a limpeza.
+## 3.5 Métricas
+- O IoU (Intersection over Union) é a métrica que compara a máscara real com a prevista pelo modelo, a área da interseção dividida pela área da união das duas, com valor entre 0 e 1. O Dice usa 2 × interseção dividida pela soma das áreas das duas máscaras, e é sempre maior que o IoU. Por exemplo, para uma lesão real de 100 pixels com 80 em comum entre as duas mascaras, o IoU é 80 ÷ 120 = 0,67 e o Dice é 160 ÷ 200 = 0,80. As duas são calculadas por classe e a média considera só as quatro doenças para que o fundo não domine totlmente a métrica pois é a classe predominante
+- A matriz de confusão compara a classe real (as linhas) com a prevista (colunas). A diagonal mostra os acertos e o resto dela podemos ver quais classes o modelo confunde entre si
+- O precision é a metrica que ve o quanto o modelo acertou dos pixels que realmente eram da classe que ele preveu, e o recall é o quanto o modelo achou de uma determinada classe. O F1 é a média das duas, ajuda a medir o desbalancamento de classes, 2 × precision × recall ÷ (precision + recall), e o F1 macro é a média simples entre as classes.
