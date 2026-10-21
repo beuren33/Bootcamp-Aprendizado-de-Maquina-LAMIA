@@ -179,6 +179,13 @@ Os resultados têm limitações, pois cada modelo foi treinado uma única vez, o
 
 # 7. Instruções de uso
 
+Para utilizar o projeto clone o repositório do bootcamp e entre na pasta do projeto que é a card-29/segmentation_rice. Os modelos '.keras' e as imagens das bases não vêm no clone na seção 7.3 será explicado como baixá-los.
+
+```bash
+git clone https://github.com/beuren33/Bootcamp-Aprendizado-de-Maquina-LAMIA.git
+cd Bootcamp-Aprendizado-de-Maquina-LAMIA/card-29/segmentation_rice
+```
+
 ## 7.1 Requisitos
 
 - Python 3.10
