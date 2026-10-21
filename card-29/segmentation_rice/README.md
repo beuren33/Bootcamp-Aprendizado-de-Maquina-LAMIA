@@ -101,3 +101,78 @@ Foram treinados 9 modelos, que são as quatro arquiteturas com as duas funções
 
 A ResNet101 com decoder maior foi treinada para testar se o decoder limitava o desempenho, já que o encoder da ResNet101 é bem maior que o da ResNet50.
 
+# 5. Resultados
+## 5.1 Avaliação
+Os 9 modelos foram avaliados na validação (1.187 imagens), onde a máscara real existe e permite medir o IoU e o Dice pixel a pixel. As duas métricas foram calculadas para cada doença, comparando a classe com o resto da imagem, e a média considera só as quatro doenças, deixando o fundo de fora para que ele não infle o resultado.
+
+| Modelo | Bacterialblight | Blast | Brownspot | Tungro | IoU médio | Dice médio |
+|---|---|---|---|---|---|---|
+| U-Net, SparseCategoricalCrossEntropy | 0,7588 | 0,7318 | 0,7096 | 0,7176 | 0,7295 | 0,8434 |
+| U-Net, Dice e SparseCategoricalCrossEntropy | 0,7590 | 0,7424 | 0,7130 | 0,7233 | 0,7344 | 0,8468 |
+| ResNet50, SparseCategoricalCrossEntropy | 0,7529 | 0,7255 | 0,6981 | 0,7040 | 0,7201 | 0,8371 |
+| ResNet50, Dice e SparseCategoricalCrossEntropy | 0,7512 | 0,7265 | 0,6991 | 0,7104 | 0,7218 | 0,8383 |
+| ResNet101, SparseCategoricalCrossEntropy | 0,7524 | 0,7263 | 0,6979 | 0,7101 | 0,7217 | 0,8382 |
+| ResNet101, Dice e SparseCategoricalCrossEntropy | 0,7544 | 0,7241 | 0,6953 | 0,7092 | 0,7208 | 0,8375 |
+| ResNet101 decoder maior, Dice e SparseCategoricalCrossEntropy | 0,7532 | 0,7288 | 0,6967 | 0,7107 | 0,7223 | 0,8386 |
+| EfficientNetB0, SparseCategoricalCrossEntropy | 0,7498 | 0,7231 | 0,6846 | 0,6997 | 0,7143 | 0,8331 |
+| EfficientNetB0, Dice e SparseCategoricalCrossEntropy | 0,7466 | 0,7185 | 0,6916 | 0,7001 | 0,7142 | 0,8331 |
+
+As colunas das doenças mostram o IoU de cada uma. O IoU médio ficou entre 0,714 e 0,734 e o Dice médio entre 0,833 e 0,847, uma diferença de no máximo 0,02 entre os modelos, e o melhor foi a U-Net com Dice e SparseCategoricalCrossEntropy. Os encoders pré-treinados não superaram a U-Net sem pré-treino, e a EfficientNetB0 teve os menores valores. A Bacterialblight é a doença mais bem segmentada em todos os modelos e a Brownspot a pior.
+
+## 5.2 Teste externo
+
+Na base externa só existe o rótulo da imagem e por isso a doença prevista para cada imagem foi a que teve mais pixels na máscara prevista, ou "sem lesão" quando o modelo não previu nenhum pixel de lesão. A acurácia compara essa doença com o rótulo da imagem e o F1, a precision e o recall são médias entre as quatro doenças, e as imagens previstas como "sem lesão" contam como erro mas ficam fora da média.
+
+| Modelo | Acurácia | F1 macro | Precision macro | Recall macro |
+|---|---|---|---|---|
+| U-Net, SparseCategoricalCrossEntropy | 0,4708 | 0,5436 | 0,6858 | 0,5070 |
+| U-Net, Dice e SparseCategoricalCrossEntropy | 0,4380 | 0,4689 | 0,6268 | 0,4855 |
+| ResNet50, SparseCategoricalCrossEntropy | 0,5925 | 0,6156 | 0,6644 | 0,6089 |
+| ResNet50, Dice e SparseCategoricalCrossEntropy | 0,5852 | 0,6056 | 0,6682 | 0,6087 |
+| ResNet101, SparseCategoricalCrossEntropy | 0,4773 | 0,4658 | 0,5809 | 0,5213 |
+| ResNet101, Dice e SparseCategoricalCrossEntropy | 0,5490 | 0,5626 | 0,6389 | 0,5798 |
+| ResNet101 decoder maior, Dice e SparseCategoricalCrossEntropy | 0,5536 | 0,5799 | 0,6487 | 0,5779 |
+| EfficientNetB0, SparseCategoricalCrossEntropy | 0,5196 | 0,5048 | 0,6352 | 0,5335 |
+| EfficientNetB0, Dice e SparseCategoricalCrossEntropy | 0,5124 | 0,5544 | 0,6654 | 0,5447 |
+
+O desempenho no teste externo ficou bem abaixo do da validação e variou muito entre os modelos, com acurácia de 0,438 a 0,593 e F1 macro de 0,466 a 0,616. O melhor modelo foi a ResNet50 com SparseCategoricalCrossEntropy e nenhum chegou à meta de 0,75 de acurácia. Como a base externa não tem máscaras o Dice e o IoU não podem ser calculados nela, e a meta de 0,70 só foi verificada na validação.
+
+## 5.3 Comparação
+
+O efeito da função de perda não seguiu um padrão. A soma do Dice melhorou a ResNet101 (F1 de 0,466 para 0,563) e a EfficientNetB0 (de 0,505 para 0,554) mas piorou a U-Net (de 0,544 para 0,469) e mudou pouco a ResNet50 (de 0,616 para 0,606). Como cada modelo foi treinado uma única vez essas diferenças podem ser ruído do treino e não efeito real da loss.
+
+Entre os encoders a ResNet50 foi a mais consistente nas duas losses, com os maiores valores de acurácia e F1, enquanto a ResNet101 com SparseCategoricalCrossEntropy teve o pior F1. Um encoder maior não garantiu melhor generalização, e na validação todos ficaram praticamente iguais. O decoder maior da ResNet101 teve um F1 de 0,580 contra 0,563 do decoder normal com a mesma loss, uma diferença pequena que indica que o decoder não era a limitação do desempenho.
+
+## 5.4 Análise de erros
+
+| Modelo | Precision Bacterialblight | Precision Blast | Precision Brownspot | Precision Tungro | Recall Bacterialblight | Recall Blast | Recall Brownspot | Recall Tungro |
+|---|---|---|---|---|---|---|---|---|
+| U-Net, SparseCategoricalCrossEntropy | 0,651 | 0,402 | 0,849 | 0,841 | 0,250 | 0,557 | 0,340 | 0,881 |
+| U-Net, Dice e SparseCategoricalCrossEntropy | 0,615 | 0,358 | 0,797 | 0,737 | 0,285 | 0,645 | 0,129 | 0,883 |
+| ResNet50, SparseCategoricalCrossEntropy | 0,703 | 0,338 | 0,833 | 0,784 | 0,508 | 0,541 | 0,499 | 0,887 |
+| ResNet50, Dice e SparseCategoricalCrossEntropy | 0,769 | 0,318 | 0,807 | 0,779 | 0,454 | 0,612 | 0,482 | 0,887 |
+| ResNet101, SparseCategoricalCrossEntropy | 0,569 | 0,293 | 0,925 | 0,536 | 0,189 | 0,587 | 0,342 | 0,968 |
+| ResNet101, Dice e SparseCategoricalCrossEntropy | 0,624 | 0,295 | 0,866 | 0,771 | 0,433 | 0,620 | 0,356 | 0,910 |
+| ResNet101 decoder maior, Dice e SparseCategoricalCrossEntropy | 0,679 | 0,304 | 0,844 | 0,767 | 0,394 | 0,559 | 0,469 | 0,890 |
+| EfficientNetB0, SparseCategoricalCrossEntropy | 0,501 | 0,271 | 0,853 | 0,916 | 0,731 | 0,409 | 0,114 | 0,880 |
+| EfficientNetB0, Dice e SparseCategoricalCrossEntropy | 0,542 | 0,327 | 0,875 | 0,918 | 0,424 | 0,593 | 0,275 | 0,887 |
+
+O padrão de erro foi parecido em todos os modelos. O Tungro foi a doença mais bem reconhecida com recall entre 0,88 e 0,97, e o Blast teve a precision mais baixa, entre 0,27 e 0,40, o que mostra que muitas imagens de outras doenças foram classificadas como Blast. A Bacterialblight e a Brownspot tiveram recall baixo na maioria dos modelos, com valores de 0,11 a 0,73, ou seja, os modelos deixaram de reconhecer boa parte dessas imagens.
+
+A causa desses erros não foi testada. As hipóteses são uma mudança de domínio entre as duas bases, já que o treino é feito de patches de lesões e o teste vem de outra fonte, o redimensionamento para 288×288 de imagens com outras proporções e a regra de escolher a doença com mais pixels, que pode favorecer doenças de lesões grandes. A matriz de confusão e a comparação visual das máscaras previstas ainda precisam ser feitas para confirmar quais classes são confundidas.
+
+## 5.5 Overfitting
+
+Nos modelos com encoder pré-treinado o IoU médio de treino ao fim do treino ficou bem acima do de validação, como 0,853 contra 0,768 na ResNet101 e 0,891 contra 0,765 na ResNet101 com decoder maior. Na U-Net sem pré-treino a diferença foi menor, de 0,809 contra 0,780, e a loss de treino e de validação ficaram próximas. Isso indica que quanto maior a capacidade do modelo mais ele se ajusta ao treino sem ganho equivalente na validação.
+
+O melhor IoU de validação foi atingido cedo nas ResNets, entre as épocas 17 e 32, e depois disso a validação ficou parada enquanto o treino continuou melhorando, e o ModelCheckpoint guardou justamente essas épocas. O maior problema de generalização está na diferença para a base externa, onde a acurácia ficou abaixo de 0,60 contra um IoU de validação acima de 0,71. Isso não é só ajuste excessivo ao treino, porque a validação vem da mesma base do treino e não detecta a mudança de domínio.
+
+# 6. Conclusão
+
+Este trabalho treinou e comparou nove modelos de segmentação semântica de lesões em folhas de arroz, combinando a U-Net com encoders ResNet50, ResNet101 e EfficientNetB0 e duas funções de perda. Na validação todos os modelos passaram de 0,70 de IoU e de Dice médios, com diferenças de no máximo 0,02 entre eles, e por isso a validação não separou os modelos.
+
+No teste externo o melhor modelo foi a ResNet50 com SparseCategoricalCrossEntropy, com acurácia de 0,593 e F1 macro de 0,616, abaixo da meta de 0,75. A soma da loss Dice com a crossentropy não teve efeito muito bom, e o decoder maior não resolveu a limitação e tambem o encoder maior não garantiu melhor generalização. 
+
+O Tungro foi bem reconhecido e o Blast foi a doença mais confundida com as outras
+
+Os resultados têm limitações, pois cada modelo foi treinado uma única vez, o teste externo tem só o rótulo por imagem e a validação vem da mesma base do treino. Outra limitação é o tamanho da base que tem 4.745 pares imagem e máscara no treino e por isso é pequena para encoders grandes como a ResNet101. Nenhuma técnica de data augmentation foi aplicada, podendo ter variações de rotação, espelhamento, brilho ou contraste que ajudariam a aumentar a variedade dos dados e a generalizar para fotos tiradas em outros cenários como as da base externa. Além disso só foi testado a arquitetura U-Net com três encoders e outras arquiteturas de segmentação(mais atuais) podem ter maior efeito na base. Como próximos passos fica para aplicar o data augmentation testar outras arquiteturas de segmentação
