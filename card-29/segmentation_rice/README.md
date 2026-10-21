@@ -176,3 +176,122 @@ No teste externo o melhor modelo foi a ResNet50 com SparseCategoricalCrossEntrop
 O Tungro foi bem reconhecido e o Blast foi a doença mais confundida com as outras
 
 Os resultados têm limitações, pois cada modelo foi treinado uma única vez, o teste externo tem só o rótulo por imagem e a validação vem da mesma base do treino. Outra limitação é o tamanho da base que tem 4.745 pares imagem e máscara no treino e por isso é pequena para encoders grandes como a ResNet101. Nenhuma técnica de data augmentation foi aplicada, podendo ter variações de rotação, espelhamento, brilho ou contraste que ajudariam a aumentar a variedade dos dados e a generalizar para fotos tiradas em outros cenários como as da base externa. Além disso só foi testado a arquitetura U-Net com três encoders e outras arquiteturas de segmentação(mais atuais) podem ter maior efeito na base. Como próximos passos fica para aplicar o data augmentation testar outras arquiteturas de segmentação
+
+# 7. Instruções de uso
+
+## 7.1 Requisitos
+
+- Python 3.10
+- GPU recomendada para o treino. Os notebooks de arquiteturas/ e avaliacao/ foram executados no Google Colab.
+
+```bash
+pip install tensorflow numpy opencv-python scikit-learn matplotlib pandas tqdm jupyter
+```
+
+## 7.2 Estrutura do repositório
+
+| Pasta | Conteúdo |
+|---|---|
+| raw/ | Bases originais baixadas (raw/zips/) e extraídas (raw/data/) |
+| preprocessing/ | Notebook que gera os arrays .npy |
+| processed/ | Arrays prontos: train/ e test/ |
+| arquiteturas/ | Um notebook de treino por encoder e por função de perda |
+| models/ | Pesos treinados '.keras'. Não estão no repositório porque passam de 100 MB(seção 7.3) |
+| avaliacao/ | Notebook que avalia os 9 modelos |
+
+## 7.3 Obter os dados e os modelos
+
+Baixe as bases e extraia em raw/data/:
+
+| Base | Uso | Link |
+|---|---|---|
+| Rice Leaf Disease Images | Imagens de treino | https://data.mendeley.com/datasets/fwcj7stb8r/1 |
+| Rice Leaf Disease Segmentation Masks | Máscaras de treino | https://data.mendeley.com/datasets/92jc6w6mcy/1 |
+| A Rice Leaf Disease Image Dataset for Multi-Class | Teste externo | https://data.mendeley.com/datasets/n8jpkpfz5p/1 |
+
+Os arrays já processados e os 9 modelos treinados estão no Drive do projeto: https://drive.google.com/drive/folders/1ygX12Npk6KUlE9s6wGCiMN2cDcIgj7UX?usp=sharing. Se usar o Drive, pulae para a seção 7.5 ou 7.6 colocando os arquivos em processed/ e models/.
+
+## 7.4 Pré-processar
+
+1. Abra preprocessing/preprocessing.ipynb
+2. Ajuste as listas list_path_img, list_path_mask e list_path_test para a pasta onde as bases foram extraídas e os caminhos dos np.save para processed/
+3. Execute todas as células
+
+O notebook compara cada imagem com a máscara de mesmo nome, redimensiona para 288×288, binariza a máscara com limiar 127, e divide em 80% treino e 20% validação, sendo feita a divisão com que cada classe fique balanceada com a divisão. No teste externo usa só as pastas bacterial_leaf_blight, leaf_blast, brown_spot e tungro.
+
+Saídas em processed/: train/x_train.npy, y_train.npy, x_val.npy, y_val.npy e test/x_test.npy, y_test.npy. Imagens com formato (N, 288, 288, 3) e máscaras de treino com formato (N, 288, 288, 1). 
+Classes: 0 Bacterialblight, 1 Blast, 2 Brownspot, 3 Tungro, 4 fundo.
+
+## 7.5 Treinar
+
+- Escolha o notebook em 'arquiteturas/':
+
+| Notebook | Encoder | Loss |
+|---|---|---|
+| U_Net.ipynb | Sem pré-treino | SparseCategoricalCrossEntropy |
+| U_Net_dice_loss.ipynb | Sem pré-treino | CE+Dice |
+| U_Net_RESNET50.ipynb | ResNet50 | SparseCategoricalCrossEntropy |
+| U_Net_RESNET50_dice_loss.ipynb | ResNet50 | CE+Dice |
+| U_Net_RESNET101.ipynb | ResNet101 | SparseCategoricalCrossEntropy |
+| U_Net_RESNET101_dice_loss.ipynb | ResNet101 | CE+Dice |
+| U_Net_RESNET101_decoder_maior_dice_loss.ipynb | ResNet101, decoder maior | CE+Dice |
+| U_Net_EfficientNetB0.ipynb | EfficientNetB0 | SparseCategoricalCrossEntropy |
+| U_Net_EfficientNetB0_dice_loss.ipynb | EfficientNetB0 | CE+Dice |
+
+- Ajuste os caminhos dos .npy e a variável path_model, onde o melhor modelo é salvo. Se não usar Colab remova a célula drive.mount
+- Execute todas as células.
+- Os hiperparâmetros são iguais em todos os notebooks: Adam, batch size 16 e até 50 épocas. O ModelCheckpoint guarda em path_model a época com maior IoU médio de validação
+
+## 7.6 Avaliar
+
+- Abra avaliacao/models_evaluation.ipynb
+- Ajuste os caminhos dos .npy e dos .keras em cada célula de modelo.
+- Execute todas as células.
+- O notebook calcula IoU e Dice por doença na validação, e acurácia, F1 macro, precision e recall no teste externo. A previsão do teste é feita em blocos de 100 imagens porque ao tentar prever as 2.623 de uma vez, pode esgotar a memória da GPU do Colab, como ocorrido em outras tentativas.
+
+## 7.7 Prever em uma imagem nova
+
+```python
+import numpy as np
+import cv2
+from keras.models import load_model
+
+modelo = load_model("models/modelo_unet_resnet.keras", compile=False)
+
+# le a imagem em RGB e ajusta para o tamanho do treino
+img = cv2.cvtColor(cv2.imread("folha.jpg"), cv2.COLOR_BGR2RGB)
+# troque o nome da imagem
+img = cv2.resize(img, (288, 288))
+
+# o modelo da a probabilidade das cinco classes em cada pixel
+prob = modelo.predict(img[np.newaxis].astype("float32"))
+# cria um novo canal para guardar as probs
+
+# classe de cada pixel de zero a tres sao as doencas e quatro e o fundo
+mascara = prob[0].argmax(axis=-1)
+
+# conta os pixels de cada doenca
+pixels = []
+for c in range(4):
+    pixels.append((mascara == c).sum())
+
+# a doenca da imagem e a que tem mais pixels
+doenca = np.argmax(pixels)
+
+# se nao ha pixel de doenca o resultado e quatro, sem lesao
+if sum(pixels) == 0:
+    doenca = 4
+
+print(doenca)
+```
+
+A entrada é a imagem RGB 288×288 com valores de 0 a 255, sem normalização, porque o preprocess_input da ResNet já está dentro do modelo e a EfficientNetB0 normaliza internamente. Para muitas imagens, chame predict em blocos e aplique o argmax em cada bloco.
+
+## 7.8 Limitações
+
+O melhor modelo no teste externo foi a ResNet50 com SparseCategoricalCrossEntropy (acurácia 0,593 e F1 macro 0,616) sendo abaixo da meta de 0,75. A quantidade de dados também limita o trabalho já que o treino usa 4.745 pares de imagem e máscara e a validação 1.187 imagens, o que é pouco para encoders grandes como a ResNet101
+
+## 7.9 Trabalhos futuros
+
+- Aplicar data augmentation (rotação, espelhamento, variação de brilho e contraste) para aumentar a quantidade dos dados de treino e reduzir a diferença entre o desempenho dos modelos na validação e o teste externo.
+- Testar outras arquiteturas de segmentação além da U-Net, como por exemplo DeepLabV3+, SegFormer ou U-Net++.
